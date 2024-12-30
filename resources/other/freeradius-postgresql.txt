@@ -1,0 +1,116 @@
+
+First, make sure you have FreeRADIUS and PostgreSQL installed on your Ubuntu system if you haven't already use bellow:
+
+# ---- A
+sudo apt update
+sudo apt install freeradius freeradius-postgresql postgresql freeradius-rest
+
+# ---- B
+# First of all enable the rest and optionally the sql module:
+sudo ln -s /etc/freeradius/3.0/mods-available/rest /etc/freeradius/3.0/mods-enabled/rest
+# optional
+sudo ln -s /etc/freeradius/3.0/mods-available/sql /etc/freeradius/3.0/mods-enabled/sql
+sudo ln -s /etc/freeradius/3.0/mods-available/sqlcounter /etc/freeradius/3.0/mods-enabled/sqlcounter
+
+# ---- c
+# Configure the REST module
+sudo subl /etc/freeradius/3.0/mods-enabled/rest
+
+# ---- D
+# Configure FreeRADIUS to use PostgreSQL
+sudo subl /etc/freeradius/3.0/mods-available/sql
+
+# -------- not used yet
+# Set up the Database Schema
+# Run SQL scripts to create the necessary tables and database structures for FreeRADIUS to store its configuration and accounting information in the PostgreSQL database (db_default).
+
+sudo -u postgres psql
+psql -d db_default -f /etc/freeradius/3.0/mods-config/sql/main/postgresql/schema.sql
+psql -d db_default -f /etc/freeradius/3.0/mods-config/sql/counter/sql/postgresql/schema.sql
+This will create the necessary tables in the "db_default" database.
+
+# Example snippet from sqlcounter configuration file 
+sudo subl /etc/freeradius/3.0/mods-enabled/sqlcounter
+
+# -------- end not used yet
+
+
+# ---- E
+# configure the FreeRADIUS site.
+sudo subl /etc/freeradius/3.0/sites-enabled/default
+
+
+# Restart FreeRADIUS
+sudo systemctl restart freeradius
+
+
+
+
+To create one FreeRADIUS site for each organization (e.g., gies, gigmeg), you'll need to configure separate FreeRADIUS instances or configurations tailored to each organization. Below are the steps you can follow to achieve this:
+Step-by-Step Instructions
+
+    Create Configuration Files for Each Organization:
+
+    You will need to create separate configuration files for each organization under /etc/freeradius/sites-enabled/. Let's create two configurations for the organizations mentioned (gies and gigmeg):
+
+        gies:
+        Create a file named /etc/freeradius/sites-enabled/gies.
+
+        gigmeg:
+        Create a file named /etc/freeradius/sites-enabled/gigmeg.
+
+    Customize Each Configuration File:
+
+    Open each configuration file (gies and gigmeg) and customize them according to the specifics of each organization. Here's a basic example of how you might structure each configuration:
+
+    plaintext
+
+# /etc/freeradius/sites-enabled/gies
+server gies {
+    authorize {
+        # Replace <org_uuid_gies> and <org_radius_api_token_gies> with actual UUID and API token for gies
+        api_token_header = "Authorization: Bearer <org_uuid_gies> <org_radius_api_token_gies>"
+        rest
+    }
+
+    authenticate {
+        # Custom authentication settings for gies organization
+    }
+
+    post-auth {
+        # Custom post-authentication settings for gies organization
+        rest
+    }
+
+    accounting {
+        # Custom accounting settings for gies organization
+        rest
+    }
+}
+
+Similarly, configure the gigmeg file with the appropriate settings for the gigmeg organization.
+
+Replace Placeholder Values:
+
+In each configuration file, replace placeholders like <org_uuid_gies>, <org_radius_api_token_gies>, <org_uuid_gigmeg>, and <org_radius_api_token_gigmeg> with the actual UUID and API token values provided for each organization.
+
+Enable Configurations:
+Ensure that both configurations (gies and gigmeg) are enabled in the FreeRADIUS server. This typically involves creating symbolic links from /etc/freeradius/sites-available/ to /etc/freeradius/sites-enabled/.
+
+bash
+ln -s /etc/freeradius/sites-available/gies /etc/freeradius/sites-enabled/
+ln -s /etc/freeradius/sites-available/gigmeg /etc/freeradius/sites-enabled/
+
+Notes:
+Each organization should have its own unique <org_uuid> and <org_radius_api_token> values. These tokens authenticate requests from OpenWISP RADIUS to FreeRADIUS, identifying which organization the request belongs to.
+
+Ensure permissions and ownership of configuration files (/etc/freeradius/sites-enabled/) are set correctly so that FreeRADIUS can read them.
+
+
+Restart FreeRADIUS Service:
+systemctl restart freeradius
+
+FreeRADIUS logs
+/var/log/freeradius/radius.log # file
+sudo tail -f /var/log/freeradius/radius.log # cli
+

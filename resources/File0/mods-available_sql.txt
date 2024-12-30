@@ -1,0 +1,43 @@
+# /etc/freeradius/3.0/mods-available/sql
+
+sql {
+
+    # General SQL settings
+    dialect = "postgresql"
+    driver = "rlm_sql_postgresql"
+
+    postgresql {
+        send_application_name = yes
+    }
+
+    # Database connection settings
+    server = "localhost"
+    port = 5432
+    login = "gmtisp"
+    password = "aaaAAA123"
+    radius_db = "db_default"
+
+    # Table configuration for accounting, authentication, and group data
+    acct_table1        = "radacct"
+    acct_table2        = "radacct"
+    postauth_table     = "radpostauth"
+    authcheck_table    = "radcheck"
+    groupcheck_table   = "radgroupcheck"
+    authreply_table    = "radreply"
+    groupreply_table   = "radgroupreply"
+    usergroup_table    = "radusergroup"
+
+    # Remove stale session if checkrad does not see a double login
+    delete_stale_sessions = yes
+
+    # Client configuration
+    read_clients       = yes
+    client_table       = "nas"
+
+    # This entry should be used for the default instance (sql {}) of the SQL module.
+    group_attribute = "SQL-Group"
+
+    # Read database-specific queries
+    $INCLUDE ${modconfdir}/${.:name}/main/${dialect}/queries.conf
+
+}

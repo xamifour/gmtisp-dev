@@ -1,0 +1,246 @@
+# ========================================
+# SYSTEM INFORMATION
+# ========================================
+
+# Check system info
+# Displays kernel and system information.
+uname -a
+
+# View CPU information
+# Shows details about the CPU architecture.
+lscpu
+
+# Memory usage
+# Displays memory (RAM) usage in a human-readable format.
+free -h
+
+# Disk usage
+# Shows disk space usage with human-readable sizes.
+df -h
+
+# Disk partition details
+# Lists information about all available block devices.
+lsblk
+
+
+# ========================================
+# FILE AND DIRECTORY MANAGEMENT
+# ========================================
+
+# List files in directory
+# Lists files and directories in the current directory.
+ls
+
+# Change directory
+# Changes the current directory.
+cd /path/to/directory
+
+# Create a directory
+# Creates a new directory.
+mkdir directory_name
+
+# Remove a file
+# Deletes a file.
+rm filename
+
+# Remove a directory
+# Removes an empty directory.
+rmdir directory_name
+
+# remove a directory which is not empty
+rm -rf /path/to/directory/
+
+# Copy a file
+# Copies a file from source to destination.
+cp source_file destination
+
+# Copy a folder with files in it
+cp -r source_dir destination
+
+# Move or rename a file
+# Moves or renames a file.
+mv source_file destination
+
+# Search for a file
+# Searches for files by name.
+find /path/to/search -name filename
+
+
+# ========================================
+# PACKAGE MANAGEMENT
+# ========================================
+
+# Update package list
+# Updates the package index.
+sudo apt update
+
+# Upgrade packages
+# Upgrades installed packages to the latest version.
+sudo apt upgrade
+
+# Install a package
+# Installs a new package.
+sudo apt install package_name
+
+# Remove a package
+# Removes a package.
+sudo apt remove package_name
+
+# Search for a package
+# Searches for packages in the repository.
+apt search package_name
+
+# Clean up unused packages
+# Removes unnecessary packages that were automatically installed.
+sudo apt autoremove
+
+
+# ========================================
+# USER MANAGEMENT
+# ========================================
+
+# List users
+# Displays a list of system users.
+cat /etc/passwd
+
+# Create a new user
+# Adds a new user to the system.
+sudo adduser username
+
+# Change user password
+# Changes the password for a specified user.
+sudo passwd username
+
+# Add a user to a group
+# Adds a user to a group.
+sudo usermod -aG group_name username
+
+# Delete a user
+# Deletes a user from the system.
+sudo deluser username
+
+
+# ========================================
+# PROCESS MANAGEMENT
+# ========================================
+
+# View running processes
+# Shows all running processes.
+ps aux
+
+# Kill a process
+# Terminates a process using its Process ID (PID).
+kill PID
+
+# Search for a process
+# Finds the PID of a running process.
+pgrep process_name
+
+# Show system activity
+# Displays a dynamic real-time view of system processes and resource usage.
+top
+
+# Show system resource usage (with a graphical interface)
+# A more interactive and colorful version of `top`.
+htop
+
+
+# ========================================
+# NETWORKING
+# ========================================
+
+# Check IP address
+# Displays the system's IP address and other network details.
+ip a
+
+# View network configuration
+# Displays network configuration (older method).
+ifconfig
+
+# Check internet connectivity
+# Tests network connectivity to a remote server (e.g., Google).
+ping google.com
+
+# Check active network connections
+# Lists open ports and network connections.
+netstat -tuln
+
+# Trace the route to a host
+# Traces the path packets take to reach a destination.
+traceroute google.com
+
+
+# ========================================
+# PERMISSIONS
+# ========================================
+
+# Change file permissions
+# Changes the permissions of a file.
+chmod 755 filename
+
+# Change file owner
+# Changes the ownership of a file.
+sudo chown user:group filename
+
+# Check file permissions
+# Displays the permissions, owner, and group of a file.
+ls -l filename
+
+
+# ========================================
+# LOGS AND SYSTEM MONITORING
+# ========================================
+
+# View system logs
+# Views system logs managed by `systemd`.
+journalctl
+
+# Check last logins
+# Shows the history of logins on the system.
+last
+
+# View a specific log file
+# Shows the last few lines of the system log and keeps updating in real-time.
+sudo tail -f /var/log/syslog
+
+
+# ========================================
+# ARCHIVING AND COMPRESSION
+# ========================================
+
+# Create a tar archive
+# Compresses a directory into a `.tar.gz` archive.
+tar -czvf archive_name.tar.gz directory_name
+
+# Extract a tar archive
+# Extracts a `.tar.gz` archive.
+tar -xzvf archive_name.tar.gz
+
+# Zip a file
+# Compresses a file into a `.zip` archive.
+zip archive_name.zip file_name
+
+# Unzip a file
+# Extracts a `.zip` archive.
+unzip archive_name.zip
+
+
+# ========================================
+# OTHER USEFUL COMMANDS
+# ========================================
+
+# Search for a file in the system
+# Searches the entire system for a specific file by name.
+sudo find / -name "filename"
+
+# Edit a file
+# Opens the file with the `nano` text editor (you can also use `vim` or `vi`).
+nano filename
+
+# Display contents of a file
+# Displays the contents of a file.
+cat filename
+
+# Show the contents of a file page by page
+# Allows scrolling through the contents of a file, one page at a time.
+less filename

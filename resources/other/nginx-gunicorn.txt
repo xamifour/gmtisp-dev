@@ -1,0 +1,157 @@
+# gmtisp folder stracture
+gmt-isp/
+    ├── .gitignore      
+    ├── gmtisp_src/
+    │   ├── appsinn/
+    │   │   ├── __init__.py
+    │   │   └── openwisp_utils/
+    │   ├── gmtisp/
+    │   │   ├── settings.py
+    │   │   └── wsgi.py
+    │   └── <other files>
+    └── <other files or folders>
+
+
+
+A. Nginx Configuration
+sudo apt update
+sudo apt install nginx
+
+# 1 Create Nginx config:
+sudo nano /etc/nginx/sites-available/gmtisp
+
+# 2 Add the following configuration
+server {
+    listen 80;
+    server_name 192.168.137.4;  # my machine's IP address or domain name or hostname
+
+    location /staticfiles/ {
+        alias /home/ka/mydev/gmt-isp/gmtisp_src/static/;
+    }
+
+    location /media/ {
+        alias /home/ka/mydev/gmt-isp/gmtisp_src/media/;
+    }
+
+    # Reverse proxy requests to Gunicorn via a Unix socket
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/gmtisp_gunicorn.sock;
+    }
+}
+
+# 3 Create a symbolic link to enable the site:
+sudo ln -s /etc/nginx/sites-available/gmtisp /etc/nginx/sites-enabled/
+
+# 4 Test the Nginx configuration
+sudo nginx -t
+# result should be successful as bellow
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+
+# 5 If everything is correct, restart Nginx:
+sudo systemctl restart nginx
+
+# If you're using ufw (Uncomplicated Firewall), allow Nginx:
+sudo ufw allow 'Nginx Full'
+
+# 8 Check nginx Logs
+sudo tail -f /var/log/nginx/error.log
+sudo tail -f /var/log/nginx/access.log
+
+
+
+B. Gunicorn Configuration
+
+# 1 Create the Gunicorn service file:
+sudo nano /etc/systemd/system/gmtisp_gunicorn.service
+
+# 2 Add the following content:
+[Unit]
+Description=Gunicorn daemon for gmtisp django project
+Requires=gmtisp_gunicorn.socket
+After=network.target
+
+[Service]
+User=ka
+Group=www-data
+WorkingDirectory=/home/ka/mydev/gmt-isp/gmtisp_src
+Environment="PYTHONPATH=/home/ka/mydev/gmt-isp/gmtisp_src/appsinn:/home/ka/mydev/gmt-isp/gmtisp_src"
+ExecStart=/home/ka/mydev/gmt-isp/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/gmtisp_gunicorn.sock \
+          gmtisp.wsgi:application
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+# 3 Create the Gunicorn Socket Unit File
+sudo nano /etc/systemd/system/gmtisp_gunicorn.socket
+
+# 4 Define the Socket Configuration
+[Unit]
+Description=Gunicorn socket for gmtisp django project
+
+[Socket]
+ListenStream=/run/gmtisp_gunicorn.sock
+
+[Install]
+WantedBy=sockets.target
+
+# 5 Add www-data user to ka group
+sudo gpasswd -a www-data ka
+
+# 6 Start and enable Gunicorn service
+systemctl daemon-reload
+
+sudo systemctl enable gmtisp_gunicorn.service
+sudo systemctl start gmtisp_gunicorn.service
+
+sudo systemctl enable gmtisp_gunicorn.socket
+sudo systemctl start gmtisp_gunicorn.socket
+
+sudo systemctl restart gmtisp_gunicorn
+
+sudo systemctl status gmtisp_gunicorn.socket
+sudo systemctl status gmtisp_gunicorn.service
+
+# Debug mode
+sudo journalctl -u gunicorn
+
+# 7 Ensure that Gunicorn is Running
+ls /run/gmtisp_gunicorn.sock
+
+# 8 Check the Gunicorn Logs
+sudo journalctl -u gunicorn -f
+sudo journalctl -u gmtisp_gunicorn.service -n 50 # will show you the last 50 lines of logs
+
+# 9 manually running gunicorn: for testing
+source /home/ka/mydev/gmt-isp/venv/bin/activate
+cd /home/ka/mydev/gmt-isp/gmtisp_src
+gunicorn --workers 3 --bind 0.0.0.0:8000 gmtisp.wsgi:application
+
+# Check Directory Permissions
+
+ls -l /run/gmtisp_gunicorn.sock
+sudo chown -R ka:www-data /home/ka/mydev/gmt-isp/gmtisp_src
+sudo chmod -R 755 /home/ka/mydev/gmt-isp/gmtisp_src
+sudo chown ka:www-data /run/gmtisp_gunicorn.sock
+
+# Note: You would use this command if you need to allow others or members of a group to access a directory or execute files within that directory.
+chmod og+x /home/ka/
+
+
+#
+systemctl daemon-reload
+sudo systemctl restart nginx
+sudo systemctl restart gmtisp_gunicorn
+systemctl restart freeradius
+
+# logs
+sudo tail -f /var/log/freeradius/radius.log
+sudo journalctl -u gmtisp_gunicorn.service -n 50
+sudo tail -f /var/log/nginx/error.log
+
+

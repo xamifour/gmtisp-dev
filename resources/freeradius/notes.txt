@@ -1,0 +1,20 @@
+Start freeradius in debug mode
+# we need to stop the main freeradius process first
+service freeradius stop
+# alternatively if you are using systemd
+systemctl stop freeradius
+# launch freeradius in debug mode
+freeradius -X
+
+Verify that the Port is Free: After stopping the service, check again to see if the port is now free:
+sudo lsof -i :18120
+root@ka-ubuntu22:/home/ka# sudo lsof -i :18120
+COMMAND    PID    USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+freeradiu 8351 freerad   27u  IPv4 151548      0t0  UDP localhost:18120 
+root@ka-ubuntu22:/home/ka# sudo kill -9 8351
+
+
+sudo tail -f /var/log/freeradius/radius.log
+
+
+systemctl restart freeradius

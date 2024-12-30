@@ -1,0 +1,30 @@
+# a complete example assuming you want to create a user testuser with password testpassword and 
+# grant privileges on a database named mydatabase:
+
+sudo -u postgres psql
+
+#CREATE USER radius WITH ENCRYPTED PASSWORD 'aaaAAA123'; -- Create the user
+CREATE USER testuser WITH PASSWORD 'testpassword';
+CREATE DATABASE mydatabase;
+GRANT ALL PRIVILEGES ON DATABASE mydatabase TO testuser;
+ALTER DATABASE mydatabase OWNER TO testuser; #change the ownership with if needed
+
+\c mydatabase;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO testuser;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL PRIVILEGES ON TABLES TO testuser;
+\q
+
+
+To start the PostgreSQL server on Ubuntu, follow these steps:
+
+Open the Terminal: You can find it in your applications menu or press Ctrl + Alt + T.
+Start the PostgreSQL Service: Use the following command to start the PostgreSQL service:
+sudo systemctl start postgresql
+
+Enable the Service at Boot (optional): If you want PostgreSQL to start automatically on boot, run:
+sudo systemctl enable postgresql
+Check the Status: To verify that the server is running, use:
+sudo systemctl status postgresql
+Access PostgreSQL: If you need to log into the PostgreSQL prompt, you can switch to the postgres user and start the PostgreSQL command line interface:
+sudo -i -u postgres psql
+

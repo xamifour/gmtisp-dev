@@ -1,0 +1,59 @@
+# /etc/freeradius/3.0/sites-enabled/default
+
+server default {
+
+    # if you are not using Radius Token authentication method, please uncomment
+    # and set the values for <org_uuid> & <org_radius_api_token>
+    api_token_header = "Authorization: Bearer f055f650-d937-45a5-839a-f79b36c9c45b dv4o8bfITN1tpmluAqQskHw83GgOW2JP"
+
+    # Listen section - defining interfaces and ports
+    listen {
+        ipaddr = *
+        type = auth
+        # 0 means "use /etc/services for the proper port"
+        port = 0
+    }
+
+    # Authorization
+    authorize {
+        
+        # Add the REST module for authorization
+        # if you are not using Radius Token authentication method, please uncomment the following
+        update control { &REST-HTTP-Header += "${...api_token_header}" }
+        rest
+
+        sql  # <-- the sql module
+    }
+
+    # Authentication
+    authenticate {
+        # If using REST for authentication, enable it here
+        #rest
+    }
+
+    # Post-Authentication
+    post-auth {
+        # if you are not using Radius Token authentication method, please uncomment the following
+        update control { &REST-HTTP-Header += "${...api_token_header}" }
+        rest
+
+        Post-Auth-Type REJECT {
+            # if you are not using Radius Token authentication method, please uncomment the following
+            update control { &REST-HTTP-Header += "${....api_token_header}" }
+            rest
+        }
+    }
+
+    # Accounting
+    accounting {
+        # if you are not using Radius Token authentication method, please uncomment the following
+        update control { &REST-HTTP-Header += "${...api_token_header}" }
+        rest
+    }
+    
+    # Pre-Accounting
+    preacct {
+        acct_unique
+    }
+    
+}

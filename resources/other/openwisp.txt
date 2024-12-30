@@ -1,0 +1,10 @@
+ln -s /etc/freeradius/3.0/mods-available/rest /etc/freeradius/3.0/mods-enabled/rest
+# optional
+ln -s /etc/freeradius/3.0/mods-available/sql /etc/freeradius/3.0/mods-enabled/sql
+
+
+sudo subl /etc/freeradius/3.0/mods-enabled/rest
+
+sudo subl /etc/freeradius/3.0/mods-available/sql
+
+sudo subl /etc/freeradius/3.0/sites-enabled/default

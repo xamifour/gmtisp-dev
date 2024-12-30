@@ -1,0 +1,196 @@
+
+# 1. Celery Worker Service
+
+# The Celery worker will be responsible for processing background tasks from the task queue.
+# Steps:
+
+# Create a Celery worker service file:
+sudo nano /etc/systemd/system/gmtisp_celery_worker.service
+
+# Add the following content to the file and save:
+[Unit]
+Description=Celery Worker Service for gmtisp Django project
+After=network.target
+
+[Service]
+User=ka
+Group=www-data
+WorkingDirectory=/home/ka/mydev/gmt-isp/gmtisp_src
+Environment="PYTHONPATH=/home/ka/mydev/gmt-isp/gmtisp_src/appsinn:/home/ka/mydev/gmt-isp/gmtisp_src"
+ExecStart=/home/ka/mydev/gmt-isp/venv/bin/celery -A gmtisp worker --loglevel=info
+Restart=always 
+
+[Install]
+WantedBy=multi-user.target
+
+# Reload systemd to apply the new service:
+sudo systemctl daemon-reload
+
+# Enable the Celery worker service to start on boot:
+sudo systemctl enable gmtisp_celery_worker
+
+# Start the Celery worker service:
+sudo systemctl start gmtisp_celery_worker
+
+# Check the status of the Celery worker:
+sudo systemctl status gmtisp_celery_worker
+
+# Run the following command to manually start the Celery worker that will process tasks:
+# "your_project_name" is the folder where settings.py is on your project
+celery -A your_project_name worker --loglevel=info
+
+
+# 2. Celery Beat Service
+# Celery Beat is responsible for scheduling periodic tasks, like cleaning up expired users or other periodic operations.
+
+# Create a Celery Beat service file:
+sudo nano /etc/systemd/system/gmtisp_celery_beat.service
+
+# Add the following content to the file and save:
+[Unit]
+Description=Celery Beat Service for gmtisp Django project
+After=network.target
+
+[Service]
+User=ka
+Group=www-data
+WorkingDirectory=/home/ka/mydev/gmt-isp/gmtisp_src
+Environment="PYTHONPATH=/home/ka/mydev/gmt-isp/gmtisp_src/appsinn:/home/ka/mydev/gmt-isp/gmtisp_src"
+ExecStart=/home/ka/mydev/gmt-isp/venv/bin/celery -A gmtisp beat --loglevel=info
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+# Reload systemd to apply the new service:
+sudo systemctl daemon-reload
+
+# Enable the Celery Beat service to start on boot:
+sudo systemctl enable gmtisp_celery_beat
+
+# Start the Celery Beat service:
+sudo systemctl start gmtisp_celery_beat
+
+# Check the status of the Celery Beat service:
+sudo systemctl status gmtisp_celery_beat
+
+
+# 3. Check Logs
+# To check the logs of Celery worker and Celery Beat, you can use:
+journalctl -u gmtisp_celery_worker -f
+journalctl -u gmtisp_celery_beat -f
+
+# This command will show you the logs in real-time for both services.
+
+
+# 4. Restart Services
+sudo systemctl restart gmtisp_celery_worker
+sudo systemctl restart gmtisp_celery_beat
+
+# 5. Stop Services
+sudo systemctl stop gmtisp_celery_worker
+sudo systemctl stop gmtisp_celery_beat
+
+# Run the following command to manually start Celery Beat to schedule periodic tasks:
+# "your_project_name" is the folder where settings.py is on your project
+celery -A your_project_name beat --loglevel=info
+
+
+
+# 3
+# To monitor Celery using Flower, you'll need to install and configure Flower as a separate service. Flower is a real-time web-based monitoring tool for Celery that provides insights into task progress, queues, and more.
+# Here’s how to set it up to monitor your Celery worker and Beat:
+
+# 1. Install Flower
+# Activate your virtual environment:
+source /home/ka/mydev/gmt-isp/venv/bin/activate
+
+# Install Flower:
+pip install flower
+
+# 2. Start Flower
+celery -A gmtisp flower --port=5555
+
+
+# If you want Flower to run as a background service and automatically start when your server reboots, you can create a systemd service for Flower.
+# Create a Flower service file:
+sudo nano /etc/systemd/system/gmtisp_celery_flower.service
+
+# Add the following configuration and save:
+[Unit]
+Description=Flower Celery Monitoring Service for gmtisp
+After=network.target
+
+[Service]
+User=ka
+Group=www-data
+WorkingDirectory=/home/ka/mydev/gmt-isp/gmtisp_src
+Environment="PYTHONPATH=/home/ka/mydev/gmt-isp/gmtisp_src/appsinn:/home/ka/mydev/gmt-isp/gmtisp_src"
+ExecStart=/home/ka/mydev/gmt-isp/venv/bin/celery -A gmtisp flower --port=5555 --basic_auth=ka:aaaAAA123
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+
+# Reload systemd to apply the new service:
+sudo systemctl daemon-reload
+
+# Enable the Flower service to start on boot:
+sudo systemctl enable gmtisp_celery_flower
+
+# Start the Flower service:
+sudo systemctl start gmtisp_celery_flower
+
+# Check the status of Flower:
+sudo systemctl status gmtisp_celery_flower
+
+sudo systemctl restart gmtisp_celery_flower
+
+# debug
+journalctl -u gmtisp_celery_flower
+
+# 4. Access Flower Dashboard
+# Once Flower is running, you can access its web-based dashboard to monitor your Celery workers, tasks, and queues. Open a web browser and navigate to:
+http://<your-server-ip>:5555
+
+# For example, if you’re running it locally, access it by going to:
+http://localhost:5555
+
+# # You'll be able to see various real-time metrics like:
+# Worker status (active, idle, etc.)
+# Task progress (success, failure, time spent)
+# Queue status (how many tasks are pending, etc.)
+# Rate of task execution
+
+# You can also configure Flower to authenticate by adding a username and password if you want to secure access to the dashboard.
+# 5. Optional: Set up Authentication for Flower
+
+# If you want to secure Flower with a username and password, you can use the --basic_auth option when starting Flower.
+# You can update the Flower service file to include basic authentication like this:
+
+ExecStart=/home/ka/mydev/gmt-isp/venv/bin/celery -A gmtisp flower --port=5555 --basic_auth=username:password
+
+# Replace username and password with your preferred credentials.
+# 6. Monitor the Services
+
+# You can now monitor Celery tasks and workers in real-time using Flower.
+# The Celery worker service will show task progress, success/failure rates, task durations, and more.
+# Flower also lets you inspect the task logs and control the worker’s state (e.g., shutdown, restart).
+
+
+# Check Directory Permissions
+ls -l /directory or file
+
+sudo chown ka:www-data /etc/systemd/system/gmtisp_celery_worker.service
+sudo chmod 755 /etc/systemd/system/gmtisp_celery_worker.service
+
+sudo chown ka:www-data /etc/systemd/system/gmtisp_celery_beat.service
+sudo chmod 755 /etc/systemd/system/gmtisp_celery_beat.service
+
+sudo chown ka:www-data /etc/systemd/system/gmtisp_celery_flower.service
+sudo chmod 755 /etc/systemd/system/gmtisp_celery_flower.service
+
+
+sudo systemctl restart gmtisp_celery_worker
+sudo systemctl restart gmtisp_celery_beat
+sudo systemctl restart gmtisp_celery_flower
